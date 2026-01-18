@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trạm Quan Trắc Thời Tiết</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <script src="function.js"></script>
+  <body>
+    <script>
+      if (localStorage.getItem("logged") !== "true") {
+        window.location.replace("index.html");
+      }
+    </script>
+
+    <div
+      id="connection-alert"
+      style="
+        display: none;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: red;
+        color: white;
+        padding: 15px 25px;
+        border-radius: 10px;
+        font-size: 18px;
+        z-index: 99999;
+      "
+    >
+      ⚠️ MẤT KẾT NỐI TRẠM MASTER !<br />
+      <small>Lần cập nhật cuối: <span id="last_update_alert">--</span></small>
+    </div>
+
+    <!-- ========== GIAO DIỆN CHÍNH ========== -->
+    <div id="main-content">
+      <header id="header">
+        <img src="image/logo 1.png" id="logo" alt="Logo" />
+        <h1>TRẠM QUAN TRẮC THỜI TIẾT</h1>
+      </header>
+
+      <div id="top">
+        <div id="time"></div>
+        <div id="day"></div>
+      </div>
+      <!-- Nút chuyển trạm -->
+      <div id="tram-buttons" style="text-align: center; margin: 10px 0">
+        <button
+          id="btnTram1"
+          onclick="chonTram('slave1'); setStation(1)"
+          style="
+            padding: 8px 16px;
+            border-radius: 8px;
+            margin-right: 5px;
+            background-color: #2b7cff;
+            color: white;
+            border: none;
+          "
+        >
+          Trạm 1
+        </button>
+        <button
+          id="btnTram2"
+          onclick="chonTram('slave2') ; setStation(2)"
+          style="
+            padding: 8px 16px;
+            border-radius: 8px;
+            background-color: #ccc;
+            border: none;
+          "
+        >
+          Trạm 2
+        </button>
+      </div>
+
+      <!-- Dữ liệu cảm biến -->
+      <section class="sensor-grid">
+        <div class="sensor-box">
+          <h2>Trạng thái</h2>
+          <p><img id="status" /></p>
+          <!--<p id="last_update"></p>-->
+          <small id="last_update">--</small>
+        </div>
+
+        <div class="sensor-box">
+          <img src="image/nhietdo.png" alt="Nhiệt độ" />
+          <h2>Nhiệt độ</h2>
+          <p id="nhietdo">-- °C</p>
+        </div>
+
+        <div class="sensor-box">
+          <img src="image/doam.png" alt="Độ ẩm" />
+          <h2>Độ ẩm</h2>
+          <p id="doam">-- %</p>
+        </div>
+
+        <div class="sensor-box">
+          <img src="image/luongmua.png" alt="Lượng mưa" />
+          <h2>Lượng mưa</h2>
+          <p id="luongmua">-- mm</p>
+        </div>
+
+        <div class="sensor-box">
+          <img src="image/tocdogio.png" alt="Tốc độ gió" />
+          <h2>Tốc độ gió</h2>
+          <p id="tocdogio">-- m/s</p>
+        </div>
+
+        <div class="sensor-box">
+          <img src="image/co.png" alt="Nồng độ CO" />
+          <h2>Nồng độ CO</h2>
+          <p id="co">-- ppm</p>
+        </div>
+
+        <div class="sensor-box">
+          <img src="image/uv.png" alt="Tia UV" />
+          <h2>Tia UV</h2>
+          <p id="uv">--</p>
+        </div>
+
+        <div class="sensor-box">
+          <img src="image/bui.png" alt="Bụi mịn PM2.5" />
+          <h2>Bụi mịn</h2>
+          <p id="bui">-- µg/m³</p>
+        </div>
+
+        <div class="sensor-box">
+          <img src="image/doon.png" alt="Độ ồn" />
+          <h2>Độ ồn</h2>
+          <p id="doon">-- dB</p>
+        </div>
+
+        <div class="sensor-box">
+          <img src="image/dienap.png" alt="Điện áp pin" />
+          <h2>Điện áp pin</h2>
+          <p id="dienap">-- V</p>
+        </div>
+
+        <div class="sensor-box">
+          <img src="image/data.png" alt="Lịch sử dữ liệu" />
+          <h2>Lịch sử dữ liệu</h2>
+          <button
+            onclick="moGoogleSheet()"
+            style="
+              padding: 8px 16px;
+              border-radius: 8px;
+              background: #28a745;
+              color: white;
+              border: none;
+            "
+          >
+            ---XEM---
+          </button>
+        </div>
+        <div class="sensor-box">
+          <img src="image/chart.jpg" alt="Chart" />
+          <h2>Biểu đồ</h2>
+          <button
+            onclick="openChart()"
+            style="
+              padding: 8px 16px;
+              border-radius: 8px;
+              background: #28a745;
+              color: white;
+              border: none;
+            "
+          >
+            ---XEM---
+          </button>
+        </div>
+      </section>
+      <footer id="footer">
+        <p>Nguyễn Văn Thành | Liên hệ: <b>0396 138 278</b></p>
+        <p>Nguyễn Văn Tưởng | Liên hệ: <b>0839 887 255</b></p>
+      </footer>
+    </div>
+
+    <!-- ==== Firebase SDK ==== -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+      // Firebase Config
+      const firebaseConfig = {
+        apiKey: "AIzaSyBBsYxtBersbD1YbLktbx9q7BNfBvm6kDI",
+        authDomain: "iot-app-daf56.firebaseapp.com",
+        databaseURL: "https://iot-app-daf56-default-rtdb.firebaseio.com",
+        projectId: "iot-app-daf56",
+        storageBucket: "iot-app-daf56.firebasestorage.app",
+        messagingSenderId: "457044759856",
+        appId: "1:457044759856:web:cef945f5afb641ec7464f5",
+        measurementId: "G-XJ24FHPJH4",
+      };
+
+      firebase.initializeApp(firebaseConfig);
+      let dbRef;
+
+      // Mặc định mở Trạm 1
+      chonTram("slave1");
+      setStation(1);
+    </script>
+    <!-- Kiểm tra kết nối master-->
+    <script>
+      firebase
+        .database()
+        .ref("master")
+        .on("value", (snapshot) => {
+          const status = snapshot.val();
+          console.log("MASTER:", status);
+
+          const alertBox = document.getElementById("connection-alert");
+
+          if (!alertBox) {
+            console.error("❌ Không tìm thấy #connection-alert trong DOM");
+            return;
+          }
+
+          if (status === "lost_connect") {
+            alertBox.style.display = "block";
+          } else {
+            alertBox.style.display = "none";
+          }
+        });
+    </script>
+
+    <script>
+      moGoogleSheet(); //<!-- ==== Mở Google Sheet ==== -->
+      dongho(); //<!-- ==== Hiển thị thời gian ==== -->
+      setInterval(() => {
+        checkConnection("slave1");
+        checkConnection("slave2");
+      }, 60000);
+    </script>
+  </body>
+</html>

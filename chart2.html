@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Biểu đồ dữ liệu thời tiết</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: url(bautroi1.jpg);
+        margin: 0;
+        padding: 20px;
+        text-align: center;
+      }
+
+      #chart-container {
+        width: 95%;
+        max-width: 1200px;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      button {
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: none;
+        background: #007bff;
+        color: white;
+        cursor: pointer;
+        margin-bottom: 20px;
+      }
+
+      button:hover {
+        background: #0066d6;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h2>BIỂU ĐỒ DỮ LIỆU THÔNG SỐ TRẠM 2</h2>
+
+    <button onclick="window.location.href='main.html'">⬅ Quay lại</button>
+
+    <div id="chart-container">
+      <canvas id="weatherChart"></canvas>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+      // Firebase config
+      const firebaseConfig = {
+        apiKey: "AIzaSyBBsYxtBersbD1YbLktbx9q7BNfBvm6kDI",
+        authDomain: "iot-app-daf56.firebaseapp.com",
+        databaseURL: "https://iot-app-daf56-default-rtdb.firebaseio.com",
+        projectId: "iot-app-daf56",
+        storageBucket: "iot-app-daf56.firebasestorage.app",
+        messagingSenderId: "457044759856",
+        appId: "1:457044759856:web:cef945f5afb641ec7464f5",
+        measurementId: "G-XJ24FHPJH4",
+      };
+
+      firebase.initializeApp(firebaseConfig);
+
+      const ctx = document.getElementById("weatherChart").getContext("2d");
+
+      const chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: [], // Thời gian
+          datasets: [
+            {
+              label: "Nhiệt độ (°C)",
+              data: [],
+              borderWidth: 2,
+              borderColor: "red",
+            },
+            {
+              label: "Độ ẩm (%)",
+              data: [],
+              borderWidth: 2,
+              borderColor: "blue",
+            },
+            {
+              label: "Tia UV",
+              data: [],
+              borderWidth: 2,
+              borderColor: "purple",
+            },
+            {
+              label: "Lượng mưa",
+              data: [],
+              borderWidth: 2,
+              borderColor: "green",
+            },
+            {
+              label: "Tốc độ gió",
+              data: [],
+              borderWidth: 2,
+              borderColor: "orange",
+            },
+            { label: "CO", data: [], borderWidth: 2, borderColor: "brown" },
+            {
+              label: "Bụi mịn",
+              data: [],
+              borderWidth: 2,
+              borderColor: "black",
+            },
+            { label: "Độ ồn", data: [], borderWidth: 2, borderColor: "pink" },
+          ],
+        },
+        options: {
+          responsive: true,
+          animation: false,
+          scales: {
+            x: {
+              title: { display: true, text: "Thời gian" },
+            },
+            y: {
+              title: { display: true, text: "Giá trị đo" },
+            },
+          },
+        },
+      });
+
+      // ===================================
+      // 🔄 LẤY DỮ LIỆU TỪ FIREBASE (slave2)
+      // ===================================
+      const dbRef = firebase.database().ref("slave2");
+
+      dbRef.on("value", (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return;
+
+        let timeLabel = "";
+
+        // ====== Trường hợp last_update là UNIX timestamp ======
+        if (typeof data.last_update === "number") {
+          const date = new Date(data.last_update * 1000);
+          timeLabel =
+            date.toLocaleTimeString("vi-VN") +
+            " " +
+            date.toLocaleDateString("vi-VN");
+        }
+
+        // ====== Trường hợp last_update là chuỗi "2025-12-12 21:12:30" ======
+        else if (typeof data.last_update === "string") {
+          timeLabel = data.last_update;
+        }
+
+        // Không có last_update → bỏ qua
+        else {
+          return;
+        }
+
+        // ==== Thêm thời gian vào biểu đồ ====
+        chart.data.labels.push(timeLabel);
+
+        // ==== Thêm giá trị vào dataset ====
+        chart.data.datasets[0].data.push(data.temp);
+        chart.data.datasets[1].data.push(data.hum);
+        chart.data.datasets[2].data.push(data.uv);
+        chart.data.datasets[3].data.push(data.rain);
+        chart.data.datasets[4].data.push(data.wind);
+        chart.data.datasets[5].data.push(data.co);
+        chart.data.datasets[6].data.push(data.dust);
+        chart.data.datasets[7].data.push(data.noise);
+
+        // Giới hạn tối đa 50 điểm
+        if (chart.data.labels.length > 50) {
+          chart.data.labels.shift();
+          chart.data.datasets.forEach((ds) => ds.data.shift());
+        }
+
+        chart.update();
+      });
+    </script>
+  </body>
+</html>

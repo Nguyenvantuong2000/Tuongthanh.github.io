@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng nhập hệ thống</title>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: url(bautroi1.jpg);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      .form-box {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        width: 350px;
+        text-align: center;
+        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .form-box input {
+        width: 90%;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 15px;
+      }
+
+      button {
+        width: 95%;
+        padding: 12px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        margin-top: 10px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      button:hover {
+        background: #0066d6;
+      }
+
+      a {
+        color: #007bff;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ====================== FORM ĐĂNG NHẬP ====================== -->
+    <div id="login-form" class="form-box">
+      <h2>Đăng nhập hệ thống</h2>
+
+      <input type="text" id="username" placeholder="Tên đăng nhập" />
+      <input type="password" id="password" placeholder="Mật khẩu" />
+
+      <button onclick="dangNhap()">Đăng nhập</button>
+
+      <p id="login-error" style="color: red; margin-top: 10px"></p>
+
+      <p style="margin-top: 10px">
+        Chưa có tài khoản? <a onclick="showRegister()">Đăng ký</a>
+      </p>
+    </div>
+
+    <!-- ====================== FORM ĐĂNG KÝ ====================== -->
+    <div id="register-form" class="form-box" style="display: none">
+      <h2>Đăng ký tài khoản</h2>
+
+      <input type="text" id="reg-username" placeholder="Tên đăng nhập" />
+      <input type="password" id="reg-password" placeholder="Mật khẩu" />
+
+      <button onclick="dangKy()">Tạo tài khoản</button>
+
+      <p id="reg-error" style="color: red; margin-top: 10px"></p>
+
+      <p style="margin-top: 10px">
+        Đã có tài khoản? <a onclick="showLogin()">Đăng nhập</a>
+      </p>
+    </div>
+
+    <script>
+      // function login() {
+      //  sessionStorage.setItem("logged", "true");
+      ////  window.location.href = "main.html";
+      // }
+    </script>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+      // =========================
+      // 💠 KHỞI TẠO FIREBASE
+      // =========================
+      const firebaseConfig = {
+        apiKey: "AIzaSyBBsYxtBersbD1YbLktbx9q7BNfBvm6kDI",
+        authDomain: "iot-app-daf56.firebaseapp.com",
+        databaseURL: "https://iot-app-daf56-default-rtdb.firebaseio.com",
+        projectId: "iot-app-daf56",
+        storageBucket: "iot-app-daf56.firebasestorage.app",
+        messagingSenderId: "457044759856",
+        appId: "1:457044759856:web:cef945f5afb641ec7464f5",
+        measurementId: "G-XJ24FHPJH4",
+      };
+
+      firebase.initializeApp(firebaseConfig);
+
+      // =========================
+      // 🔄 CHUYỂN FORM
+      // =========================
+      function showRegister() {
+        document.getElementById("login-form").style.display = "none";
+        document.getElementById("register-form").style.display = "block";
+      }
+
+      function showLogin() {
+        document.getElementById("register-form").style.display = "none";
+        document.getElementById("login-form").style.display = "block";
+      }
+
+      // =========================
+      // 🟦 ĐĂNG KÝ → lưu vào user/<username>
+      // =========================
+      function dangKy() {
+        const user = document.getElementById("reg-username").value.trim();
+        const pass = document.getElementById("reg-password").value.trim();
+        const error = document.getElementById("reg-error");
+        error.innerText = "";
+
+        if (user === "" || pass === "") {
+          error.innerText = "Vui lòng nhập đầy đủ thông tin!";
+          return;
+        }
+
+        firebase
+          .database()
+          .ref("user/" + user)
+          .once("value")
+          .then((snap) => {
+            if (snap.exists()) {
+              error.innerText = "Tên đăng nhập đã tồn tại!";
+              return;
+            }
+
+            // ➕ LƯU USER MỚI
+            return firebase
+              .database()
+              .ref("user/" + user)
+              .set({
+                password: pass,
+                role: "guest",
+                createdAt: new Date().toISOString(),
+              });
+          })
+          .then(() => {
+            alert("Đăng ký thành công!");
+            showLogin();
+          })
+          .catch(() => {
+            error.innerText = "Lỗi kết nối Firebase!";
+          });
+      }
+
+      // =========================
+      // 🟩 ĐĂNG NHẬP
+      // =========================
+      function dangNhap() {
+        const user = document.getElementById("username").value.trim();
+        const pass = document.getElementById("password").value.trim();
+        const error = document.getElementById("login-error");
+        error.innerText = "";
+
+        if (!user || !pass) {
+          error.innerText = "Vui lòng nhập đầy đủ thông tin!";
+          return;
+        }
+
+        firebase
+          .database()
+          .ref("user/" + user)
+          .once("value")
+          .then((snapshot) => {
+            if (!snapshot.exists()) {
+              error.innerText = "Tài khoản không tồn tại!";
+              return;
+            }
+
+            const data = snapshot.val();
+
+            // 🔑 SO SÁNH ĐÚNG
+            if (String(data.password).trim() !== pass.trim()) {
+              error.innerText = "Sai mật khẩu!";
+              return;
+            }
+
+            // ✅ ĐĂNG NHẬP THÀNH CÔNG
+            localStorage.setItem("logged", "true");
+            localStorage.setItem("username", user);
+            localStorage.setItem("role", data.role || "guest");
+
+            window.location.replace("main.html");
+          })
+          .catch((err) => {
+            console.error(err);
+            error.innerText = "Lỗi kết nối Firebase!";
+          });
+      }
+    </script>
+  </body>
+</html>

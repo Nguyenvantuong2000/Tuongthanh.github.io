@@ -1,0 +1,197 @@
+body {
+  font-family: Tahoma, sans-serif;
+  margin: 0;
+  min-height: 100vh; /* chiều cao tối thiểu toàn màn hình */
+  background-image: url("bautroi2.jpg");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover; /* giúp ảnh phủ toàn màn hình */
+  background-attachment: fixed; /* cố định khi cuộn */
+  color: #222;
+  text-align: center;
+}
+/* ===== tiêu đề ===== */
+#header {
+  /*background: url("bautroi.jpg") center/cover;*/
+  color: rgb(13, 13, 13);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 0;
+  position: relative;
+}
+#logo {
+  position: absolute;
+  left: 0px;
+  width: 400px;
+  height: 100px;
+}
+#header h1 {
+  font-size: 40px;
+  margin: 0;
+}
+
+/* ===== giờ ===== */
+#clock {
+  margin-top: 15px;
+  font-size: 22px;
+  color: #333;
+  font-weight: bold;
+}
+#time,
+#day {
+  font-size: 22px;
+  font-weight: bold;
+  margin: 8px 0;
+}
+/* Nút chọn trạm */
+.station-buttons {
+  margin: 15px 0;
+}
+.station-buttons button {
+  background: #0078d7;
+  border: none;
+  color: white;
+  font-size: 18px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  margin: 0 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.station-buttons button:hover {
+  background: #005fa3;
+}
+/* ===== cảm biến ===== */
+.sensor-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 cột */
+  grid-template-rows: repeat(3, 1fr);
+  grid-gap: 25px;
+  padding: 30px 50px;
+  justify-items: center;
+}
+
+.sensor-box {
+  background: #d9edf0;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  padding: 15px;
+  width: 200px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.sensor-box:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+}
+.sensor-box img {
+  width: 70px;
+  height: 70px;
+}
+.sensor-box h2 {
+  font-size: 20px;
+  color: #222;
+  margin: 10px 0 5px;
+}
+.sensor-box p {
+  font-size: 18px;
+  color: #005fa3;
+  font-weight: bold;
+}
+
+/* ===== liên hệ ===== */
+#footer {
+  position: relative;
+  bottom: 0;
+  right: 0;
+  color: #000;
+  font-size: 14px;
+  padding: 6px 10px;
+  border-top-left-radius: 10px; /* bo góc trái trên cho mềm */
+  text-align: right;
+  z-index: 1000;
+}
+
+/* --- Toàn màn hình đăng nhập --- */
+#login-container {
+  position: fixed;
+  inset: 0; /* phủ kín toàn màn hình */
+  background: url("bautroi1.jpg") no-repeat center center/cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* nổi trên cùng */
+}
+
+/* --- Hộp đăng nhập --- */
+.login-box {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 30px 40px;
+  border-radius: 15px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  width: 320px;
+  text-align: center;
+}
+
+.login-box h2 {
+  margin-bottom: 20px;
+}
+
+.login-box input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+
+.login-box button {
+  width: 100%;
+  padding: 10px;
+  background-color: #2b7cff;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.login-box button:hover {
+  background-color: #1f5fd1;
+}
+
+#connection-alert {
+  display: none;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: red;
+  color: white;
+  padding: 18px 25px;
+  border-radius: 12px;
+  font-size: 18px;
+  z-index: 99999;
+  text-align: center;
+  animation: blink 1s infinite;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+}
+
+#connection-alert small {
+  font-size: 14px;
+  display: block;
+  margin-top: 6px;
+}
+
+/* 🔴 NHẤP NHÁY */
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 1;
+  }
+}
